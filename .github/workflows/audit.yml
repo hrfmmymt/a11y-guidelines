@@ -1,0 +1,31 @@
+name: audit
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  audit:
+    name: audit
+    strategy:
+      matrix:
+        node:
+          - 12
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.55.6'
+      - run: npm ci
+      - run: npm run build
+      - uses: treosh/lighthouse-ci-action@v2
+        with:
+          configPath: .lighthouserc.json
+      - uses: actions/upload-artifact@v1
+        with:
+          name: lighthouse-results
+          path: .lighthouseci
